@@ -235,7 +235,7 @@ def google_find_homepage(row):
         tried_urls.append(row.get("url"))
 
     if row.get("title"):
-        rx_t = re.compile('^(([^-:]+.?){1,2})')
+        rx_t = re.compile(r'^(([^-:]+.?){1,2})')
         rx_u = re.compile(r'''
             (?:  <h3\s+class="r"><a\s+href="  |  /url\?q=  )
             (https?://
@@ -250,8 +250,8 @@ def google_find_homepage(row):
         
         # Do 'le google search
         html = ahttp.get("http://www.google.com/search", params=dict(hl="en", q=title, client="streamtuner2"), ajax=1, timeout=3.5)
-        #log.DATA(re.sub("<(script|style)[^>]*>.*?</(script|style)>", "", html, 100, re.S))
-                  
+        #log.DATA(re.sub(r"<(script|style)[^>]*>.*?</(script|style)>", "", html, 100, re.S))
+  
         # Find first URL hit
         url = rx_u.findall(html)
         if url:
@@ -399,8 +399,8 @@ def html_link_icon(url, href="/favicon.png"):
     elif href.startswith("/"): # root path
         return re.sub(r"(https?://[^/]+).*$", r"\g<1>", url) + href
     else: # relative path references xyz/../
-        href = re.sub("[^/]+$", "", url) + href
-        return re.sub("[^/]+/../", "/", href)
+        href = re.sub(r"[^/]+$", "", url) + href
+        return re.sub(r"[^/]+/../", "/", href)
     
 
 
