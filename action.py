@@ -172,7 +172,7 @@ def run_fmt_url(row={}, audioformat="audio/mpeg", source="pls", assoc={}, append
     # replace %u, %url or $title placeholders
     cmd = interpol(cmd, source, row, add_default=add_default)
     if append:
-        cmd = re.sub('(["\']?\s*)$', " " + append + "\\1", cmd)
+        cmd = re.sub(r'(["\']?\s*)$', " " + append + "\\1", cmd)
     run(cmd)
 
 # Start web browser
@@ -203,7 +203,7 @@ def quote(ins):
             return subprocess.list2cmdline([ins])
     # Posix-style shell quoting
     else:
-        if re.match("^\w[\w.:/\-]+$", ins):
+        if re.match(r"^\w[\w.:/\-]+$", ins):
             return ins
         else:
             return pipes.quote(ins)
@@ -249,7 +249,7 @@ def interpol(cmd, source="pls", row={}, add_default=True):
     row = copy.copy(row)
 
     # Inject other meta fields (%title, %genre, %playing, %format, etc.)
-    rx_keys = "[\$\%](" + "|".join(row.keys()) + ")\\b"
+    rx_keys = r"[\$\%](" + "|".join(row.keys()) + ")\\b"
     cmd = re.sub(rx_keys, lambda m: quote(str(row.get(m.group(1)))), cmd)
 
     # Add default %pls if cmd has no %url placeholder
@@ -422,7 +422,7 @@ class extract_playlist(heuristic_funcs):
 
     # Test URL/path "extension" for ".pls" / ".m3u" etc.
     def probe_ext(self, url):
-        e = re.findall("\.(pls|m3u|xspf|jspf|asx|wpl|wsf|smil|html|url|json|desktop)\d?$", url)
+        e = re.findall(r"\.(pls|m3u|xspf|jspf|asx|wpl|wsf|smil|html|url|json|desktop)\d?$", url)
         if e: return e[0]
         else: pass
 
@@ -592,7 +592,7 @@ class extract_playlist(heuristic_funcs):
     def pls(self):
         fieldmap = dict(file="url", title="title")
         rows = {}
-        for field,num,value in re.findall("^\s* ([a-z_-]+) (\d+) \s*=\s* (.*) $", self.src, re.M|re.I|re.X):
+        for field,num,value in re.findall(r"^\s* ([a-z_-]+) (\d+) \s*=\s* (.*) $", self.src, re.M|re.I|re.X):
             if not num in rows:
                 rows[num] = {}
             field = fieldmap.get(field.lower())
@@ -620,7 +620,7 @@ class extract_playlist(heuristic_funcs):
     def mkrow(self, row, title=None):
         url = row.get("url", "")
         comb = {
-            "title": row.get("title") or title or re.sub("\.\w+$", "", os.path.basename(self.fn)),
+            "title": row.get("title") or title or re.sub(r"\.\w+$", "", os.path.basename(self.fn)),
             "playing": "",
             "url": None,
             "homepage": "",

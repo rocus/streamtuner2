@@ -133,7 +133,7 @@ class surfmusik (ChannelPlugin):
         if path is not None:
             ucat = cat.replace(" ", "+").lower()
             html = ahttp.get(base_url + path + ucat + ".html")
-            html = re.sub("&#x?\d+;", "", html)
+            html = re.sub(r"&#x?\d+;", "", html)
         
             rx_radio = re.compile(r"""
                 <td\s+class="home1"><a[^>]*\s+href="(.+?)"[^>]*> .*?

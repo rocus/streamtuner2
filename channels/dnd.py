@@ -215,7 +215,7 @@ class dnd(object):
         # Create temporary PLS file, because "text/uri-list" is widely misunderstood
         # and just used for file:// IRLs in drag and drops
         else:
-            title = re.sub("[^\w-]+", "_", r["title"]).strip()
+            title = re.sub(r"[^\w-]+", "_", r["title"]).strip()
             tmpfn = "{}/{}.{}".format(conf.tmp, title, conf.dnd_format)
             log.DND("tmpfn", tmpfn)
             cnv.file(rows=[r], dest=conf.dnd_format, fn=tmpfn)
@@ -298,7 +298,7 @@ class dnd(object):
                 if re.match("^(scp|file)://(localhost)?/|/", fn):
 
                     # read and convert playlist files
-                    fn = compat2and3.urldecode(re.sub("^\w+://[^/]*", "", fn))
+                    fn = compat2and3.urldecode(re.sub(r"^\w+://[^/]*", "", fn))
                     cnv = action.extract_playlist(fn=fn)
                     if cnv.src:
                         rows += [ cnv.mkrow(row) for row in cnv.rows() ]

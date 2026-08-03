@@ -266,9 +266,9 @@ def google_find_homepage(row):
 
 # Convert row["img"] or row["homepage"] into local favicon cache filename
 # Use just domain for homepages, but most of the url for banner/logo imgs.
-rx_strip_proto = re.compile("^\w+://|/$|\.(png|gif|ico|jpe?g)$")
-rx_just_domain = re.compile("^\w+://|[/#?].*$")
-rx_non_wordchr = re.compile("[^\w._-]")
+rx_strip_proto = re.compile(r"^\w+://|/$|\.(png|gif|ico|jpe?g)$")
+rx_just_domain = re.compile(r"^\w+://|[/#?].*$")
+rx_non_wordchr = re.compile(r"[^\w._-]")
 def row_to_fn(row):
     url = row.get("img")
     if url:
@@ -289,7 +289,7 @@ def row_to_fn(row):
 def banner_localcopy(url, fn, resize=None):
 
     # Check URL and target filename
-    if not re.match("^https?://[\w.-]{10}", url):
+    if not re.match(r"^https?://[\w.-]{10}", url):
         return False
 
     # Fetch and save
@@ -342,7 +342,7 @@ def store_image(imgdata, fn, resize=None):
 def fav_google_ico2png(url, fn):
 
     # Download from service
-    domain = re.sub("^\w+://|/.*$", "", url).lower()
+    domain = re.sub(r"^\w+://|/.*$", "", url).lower()
     geturl = "http://www.google.com/s2/favicons?domain={}".format(domain)
     imgdata = ahttp.get(geturl, binary=1, timeout=3.5, quieter=1)
     
@@ -397,7 +397,7 @@ def html_link_icon(url, href="/favicon.png"):
     elif href.startswith("//"): # proto-absolute
         return "http:" + href
     elif href.startswith("/"): # root path
-        return re.sub("(https?://[^/]+).*$", "\g<1>", url) + href
+        return re.sub(r"(https?://[^/]+).*$", r"\g<1>", url) + href
     else: # relative path references xyz/../
         href = re.sub("[^/]+$", "", url) + href
         return re.sub("[^/]+/../", "/", href)

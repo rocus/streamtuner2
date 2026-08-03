@@ -153,7 +153,7 @@ class configwin (AuxiliaryWindow):
             # display checkbox
             elif type in ("bool", "boolean"):
                 cb = gtk.CheckButton(desc)
-                if re.search("<(\w+)[^>]*>.+</\\1>", desc):
+                if re.search(r"<(\w+)[^>]*>.+</\\1>", desc):
                     cb.get_child().set_use_markup(True)
                 desc = None
 
@@ -194,7 +194,7 @@ class configwin (AuxiliaryWindow):
     def _tooltip(self, meta):
         doc = meta.get("doc", "").strip()
         if ver < 3:
-            doc = re.sub("(?<=\S) *\n(?! *\n)", " ", doc)
+            doc = re.sub(r"(?<=\S) *\n(?! *\n)", " ", doc)
         return doc
 
     # Put config widgets into channels/features configwin notebooks

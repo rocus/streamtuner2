@@ -200,7 +200,7 @@ class xiph (ChannelPlugin):
       # Collect all result pages
       html = ahttp.get(url)
       for i in range(1, 9):
-          m = re.search('href="[?]cursor=(\w+)">Next</a>', html)
+          m = re.search(r'href="[?]cursor=(\w+)">Next</a>', html)
           if not m:
               break
           self.status(i / 11.1)
@@ -212,19 +212,19 @@ class xiph (ChannelPlugin):
 
       # Find streams
       r = []
-      rows = re.findall("""<div\s+class="card\s.*?">(.+?)</div>(?=\s+<div\s+class="card\s)""", html, re.S)
+      rows = re.findall(r"""<div\s+class="card\s.*?">(.+?)</div>(?=\s+<div\s+class="card\s)""", html, re.S)
       for html in rows:
           ls = self.rx_all(
                dict(
                   #homepage = """ class="name">  <a\s+href="(.*?)" """,
-                  title = """ <h5\s+class="card-title">  ([^>]*) </h5> """,
-                  listeners = """ (\d+) \s+ Listeners \s+ &mdash; """,
-                  playing = """ class="card-subtitle[^>]*"> On\s+Air:\s+ ([^<]*) </h6> """,
-                  description = """ class="card-text">  ([^>]*) </p> """,
-                  tags = """ ((?:<a\s+href="/genres/[^>]+> [^<]+ </a>\s+)+)  &mdash; """,
-                  url = """ <a\s+href="([^">]+)"\s+class="btn[^>]+">Play</a> """,
-                  #bits = """ class="format"\s+title="([^"]+)" """,
-                  fmt = """ <a\s+href="/codecs/(\w+) """,
+                  title = r""" <h5\s+class="card-title">  ([^>]*) </h5> """,
+                  listeners = r""" (\d+) \s+ Listeners \s+ &mdash; """,
+                  playing = r""" class="card-subtitle[^>]*"> On\s+Air:\s+ ([^<]*) </h6> """,
+                  description = r""" class="card-text">  ([^>]*) </p> """,
+                  tags = r""" ((?:<a\s+href="/genres/[^>]+> [^<]+ </a>\s+)+)  &mdash; """,
+                  url = r""" <a\s+href="([^">]+)"\s+class="btn[^>]+">Play</a> """,
+                  #bits = r""" class="format"\s+title="([^"]+)" """,
+                  fmt = r""" <a\s+href="/codecs/(\w+) """,
               ),
               html
           )
@@ -548,7 +548,7 @@ def x(node, name):
 
 # Convert bitrate string or "Quality \d+" to integer
 def bitrate(str):
-    uu = re.findall("(\d+)", str)
+    uu = re.findall(r"(\d+)", str)
     if uu:
         br = int(uu[0])
         if br > 10:

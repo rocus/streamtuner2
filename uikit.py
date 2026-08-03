@@ -643,7 +643,7 @@ class uikit:
         else:
             p = GdkPixbuf.PixbufLoader()
         if decode: # inline encoding
-            if re.match("^[\w+/=\s]+$", str(buf)):
+            if re.match(r"^[\w+/=\s]+$", str(buf)):
                 buf = base64.b64decode(buf)  # from e.g. #png: meta field
             else:
                 p.close()

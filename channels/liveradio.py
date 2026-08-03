@@ -84,11 +84,11 @@ class liveradio (ChannelPlugin):
             elif search:
                 add = ahttp.get(self.base + "stations" + page_sfx, { "text": search, "country_id": "", "genre_id": ""})
             html += add
-            if re.search('/\d+">Next</a>', add):
+            if re.search(r'/\d+">Next</a>', add):
                 page += 1
             else:
                 break
-        html = re.sub("</body>[\s\S]+<body[^>]*>", "", html)
+        html = re.sub(r"</body>[\s\S]+<body[^>]*>", "", html)
         log.DATA(html)
 
         # dom or regex                
@@ -110,7 +110,7 @@ class liveradio (ChannelPlugin):
         r = []
         ls = re.findall("""
            itemtype="https?://schema.org/RadioStation"> .*?
-           href="(?:https?://www.liveradio.\w+)?/stations/([\w-]+) .*?
+           href=r"(?:https?://www.liveradio.\w+)?/stations/([\w-]+) .*?
            <img\s+src="/(files/images/[^"]+)"   .*?
            ="country">([^<]+)<  .*?
            itemprop="name"><a[^>]+>([^<]+)</a> .*?
@@ -147,7 +147,7 @@ class liveradio (ChannelPlugin):
             log.DATA(radio)
             radio = pq(radio)
             href = radio.find("*[itemprop='name'] a").attr("href")
-            id = re.search("/([\w-]+)$", href).group(1)
+            id = re.search(r"/([\w-]+)$", href).group(1)
             r.append(dict(
                 homepage = self.base + "stations/" + id,
                 url = "urn:liveradio:" + id,
@@ -169,7 +169,7 @@ class liveradio (ChannelPlugin):
         if row.get("url").startswith("urn:liveradio"):
             id = row["url"].split(":")[2]
             html = ahttp.get(self.base + "stations/" + id)
-            ls = re.findall("jPlayer\('setMedia',\s*\{\s*'?\w+'?:\s*'([^']+)'", html, re.M)
+            ls = re.findall(r"jPlayer\('setMedia',\s*\{\s*'?\w+'?:\s*'([^']+)'", html, re.M)
             if ls:
                 row["url"] = unhtml(ls[0])
             else:

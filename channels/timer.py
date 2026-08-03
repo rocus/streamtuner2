@@ -98,7 +98,7 @@ class timer (FeaturePlugin):
         timespec = self.parent.timer_value.get_text()
 
         # basic check for consistency
-        if not re.match("^(\w{2,3}|[*,;+])+\s+(\d+:\d+)\s*((\.\.+|-+)\s*(\d+:\d+))?\s+(record|play)", timespec):
+        if not re.match(r"^(\w{2,3}|[*,;+])+\s+(\d+:\d+)\s*((\.\.+|-+)\s*(\d+:\d+))?\s+(record|play)", timespec):
             self.warn('Danger, Will Robinson! → The given timer date/action is likely invalid.', timeout=22)
 
         # hide dialog
@@ -157,9 +157,9 @@ class timer (FeaturePlugin):
     def days(self, s):
         weekdays = ["su", "mo", "tu", "we", "th", "fr", "sa", "su"]
         r = []
-        if re.search("any|all|\*", s, re.I):
+        if re.search(r"any|all|\*", s, re.I):
             return range(0,7)
-        for day in re.findall("\w\w+", s.lower()):
+        for day in re.findall(r"\w\w+", s.lower()):
             day = day[0:2]
             if day in weekdays:
                 r.append(weekdays.index(day))
@@ -167,14 +167,14 @@ class timer (FeaturePlugin):
         
     # get start time 18:00
     def time(self, s):
-        r = re.search("(\d+):(\d+)", s)
+        r = re.search(r"(\d+):(\d+)", s)
         if r:
             return int(r.group(1)), int(r.group(2))
         
     # convert "18:00-19:15" to minutes
     def duration(self, s):
         try:
-            r = re.search("(\d+:\d+)\s*(\.\.+|-+)\s*(\d+:\d+)", s)
+            r = re.search(r"(\d+:\d+)\s*(\.\.+|-+)\s*(\d+:\d+)", s)
             start = self.time(r.group(1))
             end = self.time(r.group(3))
             duration = (end[0] - start[0]) * 60 + (end[1] - start[1])

@@ -149,7 +149,7 @@ class GenericChannel(FeaturePlugin):
     nothing_found = [dict(state="gtk-no", genre="./.", title="No contents found on directory server", playing="Notice", listeners=0, bitrate=0)]
     
     # Title to homepage regex
-    rx_www_url = re.compile("""(www(\.\w+[\w-]+){2,}|(\w+[\w-]+[ ]?\.)+(com|FM|net|org|de|PL|fr|uk))""", re.I)
+    rx_www_url = re.compile(r"""(www(\.\w+[\w-]+){2,}|(\w+[\w-]+[ ]?\.)+(com|FM|net|org|de|PL|fr|uk))""", re.I)
 
     # Hooks for station list updating 
     prepare_filters = []      # run prior columns() display
@@ -748,7 +748,7 @@ def strip_tags(s):
 
 # remove SGML/XML entities
 def entity_decode(str):
-    return re.sub('&(#?(x?))(\w+);', _entity, str)
+    return re.sub(r'&(#?(x?))(\w+);', _entity, str)
 def _entity(sym):
     num, hex, name = sym.groups()
     if hex:
@@ -796,11 +796,11 @@ htmlentitydefs_n2cp = {'aring': 229, 'gt': 62, 'sup': 8835, 'Ntilde': 209, 'upsi
 
 # Extracts integer from string
 def to_int(s):
-    i = re.findall("\d+", s) or [0]
+    i = re.findall(r"\d+", s) or [0]
     return int(i[0])
 
 # Strip newlines
-rx_spc = re.compile("\s+")
+rx_spc = re.compile(r"\s+")
 def nl(str):
     return rx_spc.sub(" ", str).strip()
 

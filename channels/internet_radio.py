@@ -50,7 +50,7 @@ class internet_radio (ChannelPlugin):
     def update_categories(self):
     
         html = ahttp.get(self.base_url)
-        rx = re.compile("""="/stations/[-+&.\w\s%]+/">([^<]+)<""")
+        rx = re.compile(r"""="/stations/[-+&.\w\s%]+/">([^<]+)<""")
         cats = rx.findall(html)
         cats = list(set(cats))
         cats = [s.capitalize() for s in cats]
@@ -64,7 +64,7 @@ class internet_radio (ChannelPlugin):
         if not search and cat not in self.categories:
             return []
 
-        rx_pages = re.compile('href="/stations/[-+\w%\d\s]+/page(\d+)">\d+</a>')
+        rx_pages = re.compile(r'href="/stations/[-+\w%\d\s]+/page(\d+)">\d+</a>')
 
         # Fetch multiple pages at once
         html = []
@@ -148,7 +148,7 @@ class internet_radio (ChannelPlugin):
     # DOM traversing
     def with_dom(self, html_list):
         log.PROC("internet-radio, dom")
-        rx_numbers = re.compile("(\d+)")
+        rx_numbers = re.compile(r"(\d+)")
         r = []
         for html in html_list:
             # the streams are arranged in table rows
@@ -166,7 +166,7 @@ class internet_radio (ChannelPlugin):
                 # stream url
                 url = dir.find("i").eq(0).parent().attr("onclick")
                 if url:
-                    url = re.search("(http://[^\'\"\>]+)", url)
+                    url = re.search(r"(http://[^\'\"\>]+)", url)
                     if url:
                         url = url.group(0)
                     else:

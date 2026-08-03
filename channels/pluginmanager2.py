@@ -122,7 +122,7 @@ class pluginmanager2(object):
 
         # Fetch repository JSON list
         meta = []
-        for url in re.split("[\s,]+", conf.plugin_repos.strip()):
+        for url in re.split(r"[\s,]+", conf.plugin_repos.strip()):
             if re.match("https?://", url):
                 d = ahttp.get(url, encoding='utf-8') or []
                 meta += json.loads(d)
