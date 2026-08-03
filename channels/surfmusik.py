@@ -70,18 +70,19 @@ class surfmusik (ChannelPlugin):
         (base_url, path_genre, path_country) = self.base[lang]
 
         cats = {
-            "DE": ["Genres", "Deutschland", "Europa", "USA", "Kanada", "Amerika", "Afrika", "Asien", "Ozeanien", "MusicTV", "NewsTV", "Poli", "Flug"],
-            "EN": ["Genres", "Europe", "Germany", "USA", "Canada", "America", "Africa", "Asia", "Oceania", "MusicTV", "NewsTV", "Poli", "Flug"],
+            "DE": ["Genres", "Deutschland", "Europa", "Kanada","USA","Central-Amerika" , "South-Amerika" , "Afrika", "Asien", "Ozeanien", "MusicTV", "NewsTV", "Poli", "Flug"],
+            "EN": ["Genres", "Europe", "Germany", "Canada", "USA", "Central-Amerika","South-Amerika", "Afrika", "Asia", "Oceania", "MusicTV", "NewsTV", "Poli", "Flug"],
         }
         map = {
             "Genres": "genres.htm",
-            "Europe": "euro.htm",           "Europa": "euro.htm",
-            "Germany": "bundesland.htm",    "Deutschland": "bundesland.htm",
-            "Africa": "africa.htm",         "Afrika": "africa.htm",
-            "America": "amerika.htm",       "Amerika": "amerika.htm",
-            "Asia": "asien.htm",            "Asien": "asien.htm",
-            "Oceania": "ozean.htm",         "Ozeanien": "ozean.htm",
-            "Canada": "canadian-radio-stations.htm", "Kanada": "kanada-online-radio.htm",
+            "Europe": "euro.htm",                       "Europa": "euro.htm",
+            "Germany": "bundesland.htm",                "Deutschland": "bundesland.htm",
+            "Africa": "afrika.htm",                     "Afrika": "afrika.htm",
+            "South-America": "south-america.htm",       "South-Amerika": "south-america.htm",
+            "Central-America": "central-america.htm",   "Central-Amerika": "central-america.htm",
+            "Asia": "asien.htm",                        "Asien": "asien.htm",
+            "Oceania": "ozean.htm",                     "Ozeanien": "ozean.htm",
+            "Canada": "canada-province.htm",            "Kanada": "kanada-online-radio.htm",
             "USA": "staaten.htm",
         }
         rx_links = re.compile(r"""
@@ -135,28 +136,64 @@ class surfmusik (ChannelPlugin):
             html = ahttp.get(base_url + path + ucat + ".html")
             html = re.sub(r"&#x?\d+;", "", html)
         
-            rx_radio = re.compile(r"""
-                <td\s+class="home1"><a[^>]*\s+href="(.+?)"[^>]*> .*?
-                <a\s+class="navil"\s+href="([^"]+)"[^>]*>([^<>]+)</a></td>
-                <td\s+class="ort">(.*?)</td>.*?
-                <td\s+class="ort">(.*?)</td>.*?
-            """, re.X|re.I)
+ #           rx_radio = re.compile(r"""
+ #               <td\s+class="home1"><a[^>]*\s+href="(.+?)"[^>]*> .*?
+ #               <a\s+class="navil"\s+href="([^"]+)"[^>]*>([^<>]+)</a></td>
+ #               <td\s+class="ort">(.*?)</td>.*?
+ #               <td\s+class="ort">(.*?)</td>.*?
+ #           """, re.X|re.I)
+            rx_radio = re.compile(r'''
+            <tr.*?>
+            \s*<td>\s*<a[^>]*href="([^"]+)".*?>Livestream</a>\s*</td>
+            \s*<td>\s*<a[^>]*href="([^"]+)".*?>(.*?)</a>\s*</td>
+            \s*<td[^>]*>(.*?)</td>
+            \s*<td[^>]*>(.*?)</td>
+            ''', re.S | re.X)
+
+            rx_radio = re.compile(r'''
+            <tr[^>]*>
+
+            \s*<td>\s*
+            <a[^>]*href="([^"]+)"[^>]*>
+            Livestream
+            </a>\s*</td>
+
+            \s*<td>\s*
+            <a[^>]*href="([^"]+)"[^>]*>
+            (.*?)
+            </a>\s*</td>
+
+            \s*<td[^>]*class="ge"[^>]*>
+            (.*?)
+            </td>
+
+            (?:\s*<td[^>]*class="ge"[^>]*>
+            (.*?)
+            </td>)?
+
+            \s*</tr>
+            ''', re.S | re.X | re.I)
+ 
             rx_video = re.compile(r"""
                 <a[^>]+href="([^"]+)"[^>]*>(?:<[^>]+>)*Externer
             """, re.X|re.I)
+            rx_stream= re.compile(r'''
+                <source\s+src="([^"]+)"
+            ''', re.X| re.I)        
 
             # per-country list
             for uu in rx_radio.findall(html):
                 (url, homepage, name, genre, city) = uu
-                
+                if city == '': 
+                    city , genre = genre , ''
                 # find mms:// for webtv stations
                 if is_tv:
                     m = rx_video.search(ahttp.get(url))
                     if m:
                         url = m.group(1)
                 # just convert /radio/ into /m3u/ link
-                else:
-                    url = "http://www.surfmusik.de/m3u/" + url[30:-5] + ".m3u"
+#               else:    No m3u's anymore. html parsing required. see action.py
+#                   url = "http://www.surfmusik.de/m3u/" + url[30:-5] + ".m3u"
 
                 entries.append({
                     "title": name,
