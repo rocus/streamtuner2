@@ -77,9 +77,9 @@ class internet_radio (ChannelPlugin):
                     ahttp.get("%ssearch/?radio=%s%s" % (self.base_url, search, "&page=%s" % page if page>1 else ""))
                 )
             else:
-                html.append(
-                    ahttp.get("%sstations/%s/%s" % (self.base_url, cat.lower().replace(" ", "%20"), "page%s" % page if page>1 else ""))
-                )
+                page_part = f"page{page}" if page > 1 else ""
+                url = f"{self.base_url}stations/{cat.lower().replace(' ', '%20')}/{page_part}"
+                html.append(ahttp.get(url))
 
             # Is there a next page?
             if str(page+1) not in rx_pages.findall(html[-1]):
@@ -112,12 +112,21 @@ class internet_radio (ChannelPlugin):
         
         # Break up into <tr> blocks before extracting bits
         rx_tr = re.compile("""<tr[^>]*>(.+?)</tr>""", re.S)
+#       rx_data = re.compile(r"""     The old one
+#              playjp',\s*'(https?://[^'">]+)
+#              .*?   <h4.*?>([^<>]+)</
+#              .*?   <b>([^<>]*)</b>
+#        (?:   .*?   href="(.*?)"        )?
+#        (?:   .*?   Genres:((?:</?a[^>]+>|\w+|\s+)+)    )?
+#              .*?   (\d+)\s*Listeners
+#              .*?   (\d+)\s*Kbps
+#       """, re.S|re.X)
         rx_data = re.compile(r"""
-               playjp',\s*'(https?://[^'">]+)
-               .*?   <h4.*?>([^<>]+)</
+               playlistgenerator/\?u=(https?://[^&"]+)
+               .*?   <h4.*?>(.*?)</h4>
                .*?   <b>([^<>]*)</b>
-         (?:   .*?   href="(.*?)"        )?
-         (?:   .*?   Genres:((?:</?a[^>]+>|\w+|\s+)+)    )?
+         (?:   .*?   class="text-success" href="(.*?)" )?
+         (?:   .*?   Genres:((?:</?a[^>]+>|\w+|\s+)+) )?
                .*?   (\d+)\s*Listeners
                .*?   (\d+)\s*Kbps
         """, re.S|re.X)
@@ -132,13 +141,13 @@ class internet_radio (ChannelPlugin):
                     # transform data
                     r.append({
                         "url": url,
-                        "genre": strip_tags(genres or ""),
-                        "homepage": ahttp.fix_url(homepage or ""),
-                        "title": nl(title or ""),
-                        "playing": nl(playing or ""),
-                        "bitrate": int(bitrate or 0),
+                        "genre"    : nl(strip_tags(genres or "")),
+                        "homepage" : ahttp.fix_url(homepage or ""),
+                        "title"    : strip_tags(title or ""),
+                        "playing"  : nl(playing or ""),
+                        "bitrate"  : int(bitrate or 0),
                         "listeners": int(listeners or 0),
-                        "format": "audio/mpeg", # there is no stream info on that, but internet-radio.org.uk doesn't seem very ogg-friendly anyway, so we assume the default here
+                        "format"   : "audio/mpeg", # there is no stream info on that, but internet-radio.org.uk doesn't seem very ogg-friendly anyway, so we assume the default here
                     })
                 else:
                     log.DATA("Regex couldn't decipher entry:", div)
