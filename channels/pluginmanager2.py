@@ -31,7 +31,7 @@
 # makes this handler look complicated.
 
 
-import imp
+#import imp
 import config
 import pluginconf
 import pkgutil
