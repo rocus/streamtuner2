@@ -374,7 +374,7 @@ class StreamTunerTwo(gtk.Builder):
     # Shortcut to statusbar and progressbar (receives either a string, or a float).
     def status(self, text=None, timeout=3, markup=False, icon=None, *k, **kw):
         self.status_last = time.time() + timeout
-#       gobject.timeout_add(int(timeout*1000), self.status_clear)  PyGIDeprecationWarning: GObject.timeout_add is deprecated; use GLib.timeout_add instead
+        gobject.timeout_add(int(timeout*1000), self.status_clear) # PyGIDeprecationWarning: GObject.timeout_add is deprecated; use GLib.timeout_add instead
         #log.UI("progressbar := %s" %text)
         # progressbar
         if isinstance(text, (int, float)):
@@ -523,7 +523,7 @@ def main():
     if not len(conf.args.action) and not conf.args.version:
 
         # prepare for threading in Gtk+ callbacks
-#       gobject.threads_init()  PyGIDeprecationWarning: Since version 3.11, calling threads_init is no longer needed.
+#       gobject.threads_init()  #PyGIDeprecationWarning: Since version 3.11, calling threads_init is no longer needed.
 
         # prepare main window
         main = StreamTunerTwo()

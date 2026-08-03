@@ -729,7 +729,8 @@ def use_rx(func):
         for method, use_rx in [("RX", not conf.pyquery), ("PQ", conf.pyquery)]:
             try:
                 log.STAT(method)
-                return func(*args, use_rx=not conf.pyquery, **kwargs)
+#               return func(*args, use_rx=not conf.pyquery, **kwargs)   Seems a bug to me.
+                return func(*args, use_rx=use_rx          , **kwargs)
             except Exception as e:
                 log.ERR("{} extraction failed:".format(method), e)
                 continue
