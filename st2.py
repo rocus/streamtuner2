@@ -523,7 +523,7 @@ def main():
     if not len(conf.args.action) and not conf.args.version:
 
         # prepare for threading in Gtk+ callbacks
-        gobject.threads_init()
+#       gobject.threads_init()  PyGIDeprecationWarning: Since version 3.11, calling threads_init is no longer needed.
 
         # prepare main window
         main = StreamTunerTwo()
