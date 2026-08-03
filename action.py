@@ -99,12 +99,19 @@ placeholder_map = dict(
 
 # Playlist format content probing (assert type)
 playlist_content_map = [
-   ("pls",  r""" (?i)\[playlist\].*NumberOfEntries """),
-   ("xspf", r""" <\?xml .* <playlist .* ((?i)http://xspf\.org)/ns/0/ """),
+   ("pls",  r""" \[playlist\].*NumberOfEntries """),
+   ("xspf", r""" <\?xml .* <playlist .* (http://xspf\.org)/ns/0/ """),
    ("m3u",  r""" ^ \s* \#(EXT)?M3U """),
-   ("asx" , r""" (?i) <asx\b """),
+   ("asx" , r""" <asx\b """),
    ("smil", r""" <smil[^>]*> .* <seq> """),
-   ("html", r""" (?i)<(audio|video)\b[^>]+\bsrc\s*=\s*["']?https?:// """),
+#  ("html", r""" (?i)<(audio|video)\b[^>]+\bsrc\s*=\s*["']?https?:// """),
+#  ("html", r""" <(audio|video)\b[^>]+\bsrc\s*=\s*["']?https?:// """),
+#  ("html", r""" <source\b[^>]*\bsrc\s*=\s*["']?https?:// | data-matomo-resource\s*=\s*["']?https?:// """),
+   ("html", r"""
+    <source\b[^>]*\bsrc\s*=\s*["']?https?://
+    |
+    data-matomo-resource\s*=\s*["']?https?://
+                                  """),
    ("wpl",  r""" <\?wpl \s+ version="1\.0" \s* \?> """),
    ("b4s",  r""" <WinampXML> """),   # http://gonze.com/playlists/playlist-format-survey.html
    ("qtl",  r""" <?quicktime\d+type="application/x-quicktime-media-link"\d*?> """),
@@ -112,15 +119,15 @@ playlist_content_map = [
    ("asf",  r""" ^ \[Reference\] .*? ^Ref\d+= """),
    ("url",  r""" ^ \[InternetShortcut\] .*? ^URL= """),
 ("desktop", r""" ^ \[Desktop Entry\] .*? ^Link= """),
-   ("json", r""" "url": \s* "\w+:\\?/\\?/ """),
+#  ("json", r""" "url": \s* "\w+:\\?/\\?/ """),
    ("jamj", r""" "audio": \s* "\w+:\\?/\\?/ """),
    ("gvp",  r""" ^gvp_version:1\.\d+$ """),
-   ("href", r""" .* """),
+#  ("href", r""" .* """),
 ]
 
 # Preferred probing order of known formats
 playlist_fmt_prio = [
-   "pls", "xspf", "asx", "smil", "jamj", "json", "m3u", "asf", "raw"
+   "pls", "xspf", "asx", "smil", "jamj", "html","json", "m3u", "asf", "raw"
 ]
 
 # custom stream domain (with faux audioformat) handlers
@@ -292,6 +299,7 @@ def convert_playlist(url, source, dest, local_file=True, row={}):
 
     # Leave alone if format matches, or if already "srv" URL, or if not http (local path, mms:/rtsp:)
     if source == dest or source in ("srv", "href") or not re.match("(https?|spdy)://", url):
+        log.INFO("Leave alone if format matches ")
         return [url]
 
     # Reuse tempoary files?
@@ -350,6 +358,10 @@ def http_probe_get(url):
     # HTTP request, abort if streaming server hit (no HTTP/ header, but ICY/ response)
     try:
         r = ahttp.session.get(url, stream=True, timeout=5.0)
+        with open("/tmp/streamtuner2/surfmusik_debug.html", "w", encoding="utf-8") as f:
+             f.write(str(r.headers))
+             f.write(r.text)
+             f.close()
         if not len(r.headers):
             return ("srv", r)
     except:
@@ -430,7 +442,7 @@ class extract_playlist(heuristic_funcs):
     # Probe MIME type and content per regex
     def probe_fmt(self):
         for probe,rx in playlist_content_map:
-            if re.search(rx, self.src, re.X|re.M|re.S):
+            if re.search(rx, self.src, re.I|re.X|re.M|re.S):
                 return listfmt(probe)
         return None
 
@@ -540,6 +552,10 @@ class extract_playlist(heuristic_funcs):
             url   = r" (?ix) <ref \b[^>]+\b href \s*=\s* [\'\"] (\w+://[^\s\"\']+) [\'\"] ",
             title = r" (?ix) <title> ([^<>]+) ",
             unesc = "xml",
+        ),
+        "html": dict(
+            url   = r'''data-matomo-resource\s*=\s*["']([^"']+)["']''',
+            title = r'''data-matomo-title\s*=\s*["']([^"']+)["']''',
         ),
         "smil": dict(
             url   = r" (?x) <(?:audio|video|media)\b [^>]+ \b src \s*=\s* [^\"\']? \s* (\w+://[^\"\'\s\>]+) ",
