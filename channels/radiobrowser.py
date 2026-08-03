@@ -8,7 +8,7 @@
 # category: radio
 # priority: optional
 # config:
-#   { name: radiobrowser_cat, type: select, value: tags, select="tags|countries|languages", description: Which category types to list. }
+#   { name: radiobrowser_cat, type: select, value: tags, select="tags|my_tags|countries|languages", description: Which category types to list. Do a "Channel/Reload category tree" afterwardsi.}
 #   { name: radiobrowser_srv, type: select, value: all, select:"all|de1|fr1|nl1|old", description: API server to utilize. }
 #   { name: radiobrowser_min, type: int, value: 20, description: Minimum stations to list a category/tag. }
 # documentation: http://www.radio-browser.info/#ui-tabs-7
@@ -74,10 +74,11 @@ class radiobrowser (ChannelPlugin):
     titles = dict(listeners="Votes", bitrate="Bitrate", playing="Country")
     api_old = "http://www.radio-browser.info/webservice/json/"
     api_url = "http://{}.api.radio-browser.info/json/"  # de1, nl1, all (from conf.radiobrowser_srv)
-    categories = ["topvote", "topclick", "60s", "70s", "80s", "90s", "adult contemporary", "alternative", "ambient", "catholic", "chillout", "christian", "classic hits", "classic rock", "classical", "college radio", "commercial", "community radio", "country", "dance", "electronic", "folk", "hiphop", "hits", "house", "indie", "information", "jazz", "local music", "local news", "lounge", "metal", "music", "news", "noticias", "npr", "oldies", "pop", "public radio", "religion", "rock", "soul", "sport", "talk", "techno", "top 40", "university radio", "variety", "world music"]
+    my_categories = ["topvote", "topclick", "50s", "60s", "70s", "80s", "90s", "adult contemporary", "alternative", "ambient", "catholic", "chillout", "christian", "classic hits", "classic rock", "classical", "college radio", "commercial", "community radio", "country", "dance", "electronic", "folk", "hiphop", "hits", "house", "indie", "information", "jazz", "local music", "local news", "lounge", "metal", "music", "news", "noticias", "npr", "oldies", "pop", "public radio", "religion", "rock", "soul", "sport", "talk", "techno", "top 40", "university radio", "variety", "world music"]
     pricat = ("topvote", "topclick")
+    categories = my_categories    
     catmap = { "tags": "bytag", "countries": "bycountry", "languages": "bylanguage" }
-    tagmap = { "tags": "tag", "countries": "country", "languages": "language" }
+    tagmap = { "tags": "tag", "my_tags" : "tag", "countries": "country", "languages": "language" }
 
     # hook menu
     def init2(self, parent):
@@ -87,11 +88,14 @@ class radiobrowser (ChannelPlugin):
 
     # votes, and tags, no countries or languages
     def update_categories(self):
-        params = {"order":"name", "reverse":"false", "hidebroken":"true"} 
-        self.categories = list(self.pricat) + [grp["name"] for grp in filter(
-            lambda grp: grp["stationcount"] >= conf.radiobrowser_min,
-            self.api(conf.radiobrowser_cat, params)
-        )]
+        if conf.radiobrowser_cat == "my_tags":
+            self.categories = self.my_categories
+        else:
+            params = {"order": "stationcount", "reverse": "true", "hidebroken": "true", "limit": 50 }
+            self.categories = list(self.pricat) + [grp["name"] for grp in filter(
+                lambda grp: grp["stationcount"] >= conf.radiobrowser_min,
+                self.api(conf.radiobrowser_cat, params)
+              )]
             
 
     # Direct mapping
@@ -145,6 +149,7 @@ class radiobrowser (ChannelPlugin):
                 bitrate = int(e["bitrate"]),
                 favicon = e["favicon"]
             ))
+        r.sort(key=lambda s: s["listeners"], reverse=True)
         return r
 
 
@@ -167,38 +172,30 @@ class radiobrowser (ChannelPlugin):
 
     # callback for general stream play event
     def click(self, row, channel):
-        if not channel == self:
+        if channel is not self:
             return
         # fetch uuid, then register click
         uuid = self.api("stations/byurl", {"url": row.get("url")}, quieter=1)
         if uuid:
             if isinstance(uuid, list): # just vote on the first entry
                 uuid = uuid[0]
-            log.CLICK(self.api("url/{}".format(uuid["stationuuid"], quieter=1)))
+            log.INFO( uuid["stationuuid"] )
+            j = self.api("url/{}".format(uuid["stationuuid"], quieter=1))
+            if  j and "ok" in j and j["ok"]:
+                log.INFO(j["message"])
 
 
     # Add radio station to RBI
     def submit(self, *w):
         cn = self.parent.channel()
         row = cn.row()
-        # convert row from channel
-        data = dict(
-            name = row["title"],
-            url = row["url"],
-            homepage = row["homepage"],
-            #favicon = self.parent.favicon.html_link_icon(row["url"]), # no longer available as module
-            tags = row["genre"].replace(" ", ","),
-        )
-        # map extra fields
-        for _from,_val,_to in [("playing","location","country")]:
-            #country	Austria	The name of the country where the radio station is located
-            #state	Vienna	The name of the part of the country where the station is located
-            #language	English	The main language which is used in spoken text parts of the radio station.
-            if _from in cn.titles and cn.titles[_from].lower() == _val:
-                data[_to] = _from
-        # API submit
-        j = self.api("add", data, post=1)
-        log.SUBMIT_RBI(j)
-        if j and "ok" in j and j["ok"] == "true" and "id" in j:
-            self.parent.status("Submitted successfully to Radio-Browser.info, new station id #%s." % j["id"], timeout=15)
-
+        # fetch uuid, then register vote
+        uuid = self.api("stations/byurl", {"url": row.get("url")}, quieter=1)
+        if uuid:
+            if isinstance(uuid, list): # just vote on the first entry
+                uuid = uuid[0]
+            log.INFO( uuid["stationuuid"] )
+            j = self.api("vote/{}".format(uuid["stationuuid"], quieter=1))
+            if  j and "ok" in j and j["ok"]:
+                log.SUBMIT_RBI(j["message"])
+                self.parent.status("Submitted successfully to Radio-Browser.info, new station id #%s." % j["message"], timeout=10)
