@@ -1,0 +1,22 @@
+#! /usr/bin/python3
+# api: cli
+# type: wrapper
+# title: streamtuner2
+# pack: bin=/usr/bin/streamtuner2
+#
+# Invocation script for /usr/share/streamtuner2/st2.py
+
+import sys, os
+#sys.path.insert(0, "/usr/share/streamtuner2")
+sys.path.insert(0, "/home/rocus/git/streamtuner2")
+
+try:
+    import st2
+    st2.main()
+except ImportError as e:
+    import traceback, re
+    print(traceback.format_exc())
+    name = re.findall(r"\w+$", e.message)[0]
+    print("Alternatively try to start streamtuner2 with Python3: `python3 /usr/bin/streamtuner2`") 
+    print("Else you might need to install missing modules: `pip install {}` or `pip3 install {}`\n".format(name, name))
+    
