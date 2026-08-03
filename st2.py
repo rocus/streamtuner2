@@ -375,7 +375,6 @@ class StreamTunerTwo(gtk.Builder):
     def status(self, text=None, timeout=3, markup=False, icon=None, *k, **kw):
         self.status_last = time.time() + timeout
 #       gobject.timeout_add(int(timeout*1000), self.status_clear)  PyGIDeprecationWarning: GObject.timeout_add is deprecated; use GLib.timeout_add instead
-        glib.timeout_add(int(timeout*1000), self.status_clear)
         #log.UI("progressbar := %s" %text)
         # progressbar
         if isinstance(text, (int, float)):

@@ -108,9 +108,9 @@ class liveradio (ChannelPlugin):
     #
     def rx_extract(self, html):
         r = []
-        ls = re.findall("""
+        ls = re.findall(r"""
            itemtype="https?://schema.org/RadioStation"> .*?
-           href=r"(?:https?://www.liveradio.\w+)?/stations/([\w-]+) .*?
+           href="(?:https?://www.liveradio.\w+)?/stations/([\w-]+) .*?
            <img\s+src="/(files/images/[^"]+)"   .*?
            ="country">([^<]+)<  .*?
            itemprop="name"><a[^>]+>([^<]+)</a> .*?
