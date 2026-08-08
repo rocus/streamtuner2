@@ -312,9 +312,9 @@ def store_image(imgdata, fn, resize=None):
             # Resize
             if resize and image.size[0] > resize:
                 try:
-                    image.thumbnail((resize, resize), Image.ANTIALIAS)
+                    image.thumbnail((resize, resize), Image.LANCZOS)
                 except:
-                    image = image.resize((resize,resize), Image.ANTIALIAS)
+                    image = image.resize((resize,resize), Image.LANCZOS)
 
             # Convert to PNG via string buffer
             out = BytesIO()
