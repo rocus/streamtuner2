@@ -358,10 +358,6 @@ def http_probe_get(url):
     # HTTP request, abort if streaming server hit (no HTTP/ header, but ICY/ response)
     try:
         r = ahttp.session.get(url, stream=True, timeout=5.0)
-        with open("/tmp/streamtuner2/surfmusik_debug.html", "w", encoding="utf-8") as f:
-             f.write(str(r.headers))
-             f.write(r.text)
-             f.close()
         if not len(r.headers):
             return ("srv", r)
     except:
