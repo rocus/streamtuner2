@@ -352,6 +352,7 @@ def fav_google_ico2png(url, fn):
         return False
     # Save
     else:
+        log.FAVICON("Image converted by google")
         return store_image(imgdata, fn)
     
 
@@ -365,8 +366,17 @@ def fav_from_homepage(url, fn):
         return False
         
     # Fetch image, verify MIME type
+
     r = ahttp.get(img, binary=1, content=0, timeout=4.25, quieter=1)
-    if not re.match('image/(png|jpe?g|png|ico|x-ico|vnd.microsoft.ico)', r.headers["content-type"], re.I):
+
+    if not r:
+        return False
+
+    if not re.match(
+            'image/(png|jpe?g|ico|x-ico|vnd.microsoft.ico)',
+            r.headers.get("content-type", ""),
+            re.I
+        ):
         log.WARN("content-type wrong", r.headers)
         return False
         
