@@ -4,3 +4,4 @@ My source for this project was the current deb package for Streamtuner2 version 
 
 You are free to use streamtuner2 as you wish. If you have comments/bugs or suggestions you can post an issue. I must stress that I am not the (new) maintainer of this program: I simply miss the knowledge or experience for that. Said that, I can try to solve problems!
 
+
